@@ -1,9 +1,7 @@
 import { useEffect, useState } from 'react';
 import {
   ActivityIndicator,
-  KeyboardAvoidingView,
   Modal,
-  Platform,
   Pressable,
   ScrollView,
   StyleSheet,
@@ -167,10 +165,11 @@ function CitySearchModal({ visible, onClose }: { visible: boolean; onClose: () =
   }
 
   return (
-    <Modal visible={visible} transparent animationType="slide" onRequestClose={close}>
+    <Modal visible={visible} transparent animationType="fade" onRequestClose={close}>
+      {/* Anchored to the TOP so the search field stays above the keyboard. */}
       <Pressable style={styles.modalBackdrop} onPress={close}>
         <Pressable style={styles.sheet} onPress={() => {}}>
-          <SafeAreaView edges={['bottom']}>
+          <SafeAreaView edges={['top']}>
             <View style={styles.sheetHeaderRow}>
               <Text style={styles.sheetTitle}>Set your location</Text>
               <Pressable hitSlop={12} onPress={close}>
@@ -178,46 +177,44 @@ function CitySearchModal({ visible, onClose }: { visible: boolean; onClose: () =
               </Pressable>
             </View>
 
-            <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
-              <TextInput
-                style={styles.input}
-                placeholder="Search for a city"
-                placeholderTextColor={COLORS.muted}
-                value={query}
-                onChangeText={setQuery}
-                autoFocus
-                autoCapitalize="words"
-                autoCorrect={false}
-              />
+            <TextInput
+              style={styles.input}
+              placeholder="Search for a city"
+              placeholderTextColor={COLORS.muted}
+              value={query}
+              onChangeText={setQuery}
+              autoFocus
+              autoCapitalize="words"
+              autoCorrect={false}
+            />
 
-              {saveError ? <Text style={styles.errorText}>{saveError}</Text> : null}
+            {saveError ? <Text style={styles.errorText}>{saveError}</Text> : null}
 
-              <View style={styles.resultsArea}>
-                {loading ? (
-                  <ActivityIndicator style={styles.resultsLoader} color={COLORS.olive} />
-                ) : error ? (
-                  <Text style={styles.hint}>Couldn’t search right now. Check your connection.</Text>
-                ) : query.trim().length < 2 ? (
-                  <Text style={styles.hint}>Type a city name to search.</Text>
-                ) : results.length === 0 ? (
-                  <Text style={styles.hint}>No matching cities.</Text>
-                ) : (
-                  <ScrollView keyboardShouldPersistTaps="handled" showsVerticalScrollIndicator={false}>
-                    {results.map((city) => (
-                      <Pressable key={city.id} style={styles.resultRow} onPress={() => pick(city)}>
-                        <View style={styles.resultText}>
-                          <Text style={styles.resultName}>{city.name}</Text>
-                          <Text style={styles.resultSub}>
-                            {[city.admin1, city.country].filter(Boolean).join(', ')}
-                          </Text>
-                        </View>
-                        {savingId === city.id ? <ActivityIndicator color={COLORS.olive} /> : null}
-                      </Pressable>
-                    ))}
-                  </ScrollView>
-                )}
-              </View>
-            </KeyboardAvoidingView>
+            <View style={styles.resultsArea}>
+              {loading ? (
+                <ActivityIndicator style={styles.resultsLoader} color={COLORS.olive} />
+              ) : error ? (
+                <Text style={styles.hint}>Couldn’t search right now. Check your connection.</Text>
+              ) : query.trim().length < 2 ? (
+                <Text style={styles.hint}>Type a city name to search.</Text>
+              ) : results.length === 0 ? (
+                <Text style={styles.hint}>No matching cities.</Text>
+              ) : (
+                <ScrollView keyboardShouldPersistTaps="handled" showsVerticalScrollIndicator={false}>
+                  {results.map((city) => (
+                    <Pressable key={city.id} style={styles.resultRow} onPress={() => pick(city)}>
+                      <View style={styles.resultText}>
+                        <Text style={styles.resultName}>{city.name}</Text>
+                        <Text style={styles.resultSub}>
+                          {[city.admin1, city.country].filter(Boolean).join(', ')}
+                        </Text>
+                      </View>
+                      {savingId === city.id ? <ActivityIndicator color={COLORS.olive} /> : null}
+                    </Pressable>
+                  ))}
+                </ScrollView>
+              )}
+            </View>
           </SafeAreaView>
         </Pressable>
       </Pressable>
@@ -229,16 +226,16 @@ const styles = StyleSheet.create({
   weather: { fontFamily: 'Inter_400Regular', fontSize: 14, color: COLORS.muted, marginTop: 6 },
   prompt: { fontFamily: 'Inter_500Medium', fontSize: 14, color: COLORS.olive, marginTop: 6 },
 
-  // Modal
-  modalBackdrop: { flex: 1, backgroundColor: COLORS.backdrop, justifyContent: 'flex-end' },
+  // Modal — anchored to the top so the input clears the keyboard.
+  modalBackdrop: { flex: 1, backgroundColor: COLORS.backdrop, justifyContent: 'flex-start' },
   sheet: {
     backgroundColor: COLORS.cream,
-    borderTopLeftRadius: 28,
-    borderTopRightRadius: 28,
+    borderBottomLeftRadius: 28,
+    borderBottomRightRadius: 28,
     paddingHorizontal: 24,
-    paddingTop: 20,
-    paddingBottom: 8,
-    maxHeight: '80%',
+    paddingTop: 8,
+    paddingBottom: 20,
+    maxHeight: '85%',
   },
   sheetHeaderRow: {
     flexDirection: 'row',
@@ -260,7 +257,7 @@ const styles = StyleSheet.create({
     paddingVertical: 14,
   },
   errorText: { fontFamily: 'Inter_400Regular', fontSize: 14, color: COLORS.error, marginTop: 10 },
-  resultsArea: { marginTop: 14, minHeight: 80 },
+  resultsArea: { marginTop: 14, minHeight: 80, maxHeight: 380 },
   resultsLoader: { marginTop: 24 },
   hint: { fontFamily: 'Inter_400Regular', fontSize: 14, color: COLORS.muted, marginTop: 20, textAlign: 'center' },
   resultRow: {

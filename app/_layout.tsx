@@ -2,6 +2,7 @@ import { DarkTheme, DefaultTheme, ThemeProvider } from '@react-navigation/native
 import { Stack } from 'expo-router';
 import * as SplashScreen from 'expo-splash-screen';
 import { StatusBar } from 'expo-status-bar';
+import { useEffect } from 'react';
 import 'react-native-reanimated';
 
 import { AuthProvider, useAuth } from '@/lib/auth-context';
@@ -14,9 +15,14 @@ SplashScreen.preventAutoHideAsync();
 
 function SplashScreenController() {
   const { isLoading } = useAuth();
-  if (!isLoading) {
-    SplashScreen.hideAsync();
-  }
+  useEffect(() => {
+    // Hide once, when loading finishes. Calling this on every render (and while a
+    // modal view controller is on top) throws "no native splash registered…";
+    // the catch swallows the harmless rejection if it's already hidden.
+    if (!isLoading) {
+      SplashScreen.hideAsync().catch(() => {});
+    }
+  }, [isLoading]);
   return null;
 }
 
